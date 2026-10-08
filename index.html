@@ -223,7 +223,7 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
   <nav class="tabs" role="tablist" id="tabs"></nav>
   <div class="filters" id="filters" aria-label="공부할 범위"></div>
   <main id="view"></main>
-  <p class="note">발음은 기기에 설치된 영어 음성으로 재생돼요. 소리가 안 나면 iPad 옆 무음 스위치와 볼륨을 확인하세요.</p>
+  <p class="note">발음은 미리 녹음한 원어민식 음성(여자·남자)으로 재생돼 iPad와 안드로이드 폰 모두에서 들려요. 소리가 안 나면 미디어 볼륨을 확인하세요.</p>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -306,7 +306,7 @@ const sayBtn=(n,what,label)=>`<button class="say" data-say="${what}" data-n="${n
 
 /* ---------- saved state (this device only) ---------- */
 const KEY="power-english-101-150.v1";
-const S={known:[],wrong:{},rate:1,voice:"",auto:true,tab:"list",filter:"all",hide:false,cardMode:"en",qtype:"e2k",qcount:10};
+const S={known:[],wrong:{},rate:1,voice:"",engine:"f",auto:true,tab:"list",filter:"all",hide:false,cardMode:"en",qtype:"e2k",qcount:10};
 try{const raw=localStorage.getItem(KEY);if(raw)Object.assign(S,JSON.parse(raw));}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 let known=new Set(S.known);
@@ -330,8 +330,9 @@ function pickVoice(){
     ||voices.find(v=>/en[-_]US/i.test(v.lang)&&v.localService)
     ||voices.find(v=>/en[-_]US/i.test(v.lang))||voices[0];
 }
+/* device voice (Web Speech) — optional; unavailable in many Android in-app browsers */
 function speak(text,slow){
-  if(!synth){toast("이 브라우저에서는 발음 재생이 안 돼요. iPad의 Safari로 열어 주세요.");return;}
+  if(!synth){toast("이 브라우저에는 기기 음성이 없어요. 목소리를 '여자'나 '남자'로 바꾸세요.");return;}
   const u=new SpeechSynthesisUtterance(text);
   const v=pickVoice();
   if(v){u.voice=v;u.lang=v.lang;}else u.lang="en-US";
@@ -339,7 +340,26 @@ function speak(text,slow){
   if(synth.speaking||synth.pending){synth.cancel();setTimeout(()=>synth.speak(u),80);}
   else synth.speak(u);
 }
-function sayEntry(n,what,slow){const x=BY[n];if(!x)return;speak(what==="sent"?plain(x.s):x.w,slow);}
+/* recorded MP3 (audio/<f|m>/<n>w|ws|s.mp3) — default, works on any phone or browser */
+const player=new Audio();
+player.preload="auto";
+const FILE_RATE={1:1,.75:.8,.5:.65};
+function playFile(n,what,slow,text){
+  if(synth&&(synth.speaking||synth.pending))synth.cancel();
+  const kind=what==="sent"?"s":slow?"ws":"w";
+  player.pause();
+  player.src=`audio/${S.engine}/${n}${kind}.mp3`;
+  player.playbackRate=kind==="ws"?1:(FILE_RATE[S.rate]||1);
+  if("preservesPitch" in player)player.preservesPitch=true;
+  player.onerror=()=>{player.onerror=null;if(synth)speak(text,slow);else toast("발음 파일을 불러오지 못했어요. 인터넷 연결을 확인하세요.");};
+  const p=player.play();
+  if(p&&p.catch)p.catch(err=>{if(err&&err.name==="NotAllowedError")toast("화면을 한 번 누른 다음 다시 눌러 주세요.");});
+}
+function sayEntry(n,what,slow){
+  const x=BY[n];if(!x)return;
+  const text=what==="sent"?plain(x.s):x.w;
+  if(S.engine==="device")speak(text,slow);else playFile(n,what,slow,text);
+}
 if(synth){loadVoices();if("onvoiceschanged" in synth)synth.onvoiceschanged=loadVoices;setTimeout(loadVoices,700);}
 
 let toastT;
@@ -349,7 +369,9 @@ function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTi
 function renderVoicebar(){
   const rates=[[1,"보통"],[.75,"천천히"],[.5,"아주 천천히"]];
   let h=`<div class="seg" role="group" aria-label="발음 속도">`+rates.map(([r,l])=>`<button data-act="rate" data-v="${r}" aria-pressed="${S.rate===r}">${l}</button>`).join("")+`</div>`;
-  if(voices.length>1){
+  const engines=[["f","여자"],["m","남자"],["device","기기 음성"]];
+  h+=`<div class="seg" role="group" aria-label="목소리">`+engines.map(([id,l])=>`<button data-act="engine" data-v="${id}" aria-pressed="${S.engine===id}">${l}</button>`).join("")+`</div>`;
+  if(S.engine==="device"&&voices.length>1){
     const cur=pickVoice();
     h+=`<select class="vsel" id="voiceSelect" aria-label="목소리">`+voices.map(v=>`<option value="${esc(v.voiceURI)}"${cur&&v.voiceURI===cur.voiceURI?" selected":""}>${esc(v.name)} · ${esc(v.lang.replace("_","-"))}</option>`).join("")+`</select>`;
   }
@@ -609,7 +631,8 @@ document.addEventListener("click",e=>{
   switch(a){
     case "tab":S.tab=v;confirmReset=null;save();render();window.scrollTo({top:0});if(v==="card")cardSpeakFront();break;
     case "filter":S.filter=v;save();if(Q&&!Q.done&&S.tab==="quiz"){/* keep running quiz */}render();break;
-    case "rate":S.rate=+v;save();renderVoicebar();speak("Power English");break;
+    case "rate":S.rate=+v;save();renderVoicebar();sayEntry(101,"word");break;
+    case "engine":S.engine=v;save();renderVoicebar();sayEntry(101,"word");break;
     case "auto":S.auto=!S.auto;save();renderVoicebar();break;
     case "hide":S.hide=!S.hide;save();render();break;
     case "peek":{const r=b.closest(".row");if(r&&r.classList.contains("cover"))r.classList.remove("cover");break;}
@@ -679,7 +702,6 @@ document.addEventListener("touchend",e=>{
 
 if(!TABS.some(t=>t[0]===S.tab))S.tab="list";
 renderVoicebar();render();
-if(!synth)toast("이 브라우저에서는 발음 재생이 안 돼요. iPad의 Safari로 열어 주세요.");
 })();
 </script>
 </body>
