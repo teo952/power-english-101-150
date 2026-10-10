@@ -67,8 +67,12 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
 .chk .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--muted)}
 .chk[aria-pressed="true"] .dot{background:var(--accent);border-color:var(--accent)}
 
+.top .brand{flex:1;min-width:0}
+.voicebar{flex-basis:100%}
+#view{scroll-margin-top:72px}
+
 /* tabs */
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:var(--shadow)}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:var(--shadow)}
 .tabs button{border:0;background:none;border-radius:10px;padding:10px 4px;font-weight:500;color:var(--muted);min-height:46px}
 .tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
 .tabs small{font-family:var(--f-mono);font-size:.72rem;opacity:.75;margin-left:4px}
@@ -197,6 +201,30 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
 .wrongs p{margin:0;color:var(--muted);font-size:.92rem}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap}
 .xbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:4px 10px;font-size:.8rem;color:var(--muted);min-height:36px}
+/* bottom dock: next/answer buttons stay on screen */
+.dock{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;gap:8px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 -6px 20px rgba(20,30,70,.14)}
+.dock .btn{flex:1;min-height:50px}
+.dock .btn.icon{flex:0 0 54px;padding:0}
+.rangebtn{font-weight:500}
+
+/* sentence study */
+.s-ko{margin:0;font-weight:700;font-size:clamp(1.15rem,4.2vw,1.45rem);line-height:1.5;text-wrap:pretty}
+.s-en{margin:0;font-family:var(--f-display);font-size:clamp(1.25rem,4.4vw,1.55rem);line-height:1.5;flex:1;min-width:0}
+.s-key{font-size:.85rem;color:var(--muted)}
+.s-key b{font-family:var(--f-display);font-size:1.1rem;color:var(--ink)}
+.tokline{min-height:62px;border:2px dashed var(--line);border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.tokline.right{border-style:solid;border-color:var(--good);background:var(--good-soft)}
+.tokline.wrong{border-style:solid;border-color:var(--bad);background:var(--bad-soft)}
+.tokpool{display:flex;flex-wrap:wrap;gap:6px}
+.tok{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 12px;font-family:var(--f-display);font-size:1.15rem;min-height:44px;color:var(--ink)}
+.tok.used{visibility:hidden}
+.tokline .tok{background:var(--accent-soft);border-color:var(--accent)}
+.swrite{width:100%;min-height:92px;font-family:var(--f-display);font-size:1.25rem;line-height:1.45;border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface);color:var(--ink);resize:vertical}
+.swrite.right{border-color:var(--good)}
+.swrite.wrong{border-color:var(--bad)}
+.diff{margin:0;font-family:var(--f-display);font-size:1.15rem;line-height:1.6}
+.diff del{color:var(--bad);text-decoration:line-through}
+.diff ins{color:var(--good);text-decoration:none;font-weight:700;border-bottom:2px solid var(--good)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-size:.92rem;max-width:min(92vw,520px);z-index:20;box-shadow:var(--shadow)}
 .note{font-size:.8rem;color:var(--muted);margin:0;text-align:center}
 @media (max-width:560px){
@@ -206,6 +234,13 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
   .c-nav{grid-template-columns:1fr 1fr}
   .c-nav .navbtn{order:3}
   .tabs small{display:none}
+  .tabs button{padding:8px 2px;font-size:.92rem}
+  body{padding-block:12px 40px}
+  .app{gap:12px}
+  .eyebrow{display:none}
+  h1{font-size:1.65rem}
+  .card,.qbox{padding:18px 16px 16px}
+  .c-back{min-height:120px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -214,16 +249,17 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
 
 <div class="app">
   <header class="top">
-    <div>
+    <div class="brand">
       <p class="eyebrow">화명중 2학년 필수 어휘 · 2학기 1차고사 범위</p>
       <h1>Power English<span>101–150</span></h1>
     </div>
-    <div class="voicebar" id="voicebar"></div>
+    <button class="chk" id="setbtn" data-act="set" aria-expanded="false" aria-controls="voicebar"><span class="dot"></span>소리 설정</button>
+    <div class="voicebar" id="voicebar" hidden></div>
   </header>
   <nav class="tabs" role="tablist" id="tabs"></nav>
   <div class="filters" id="filters" aria-label="공부할 범위"></div>
   <main id="view"></main>
-  <p class="note">발음은 미리 녹음한 원어민식 음성(여자·남자)으로 재생돼 iPad와 안드로이드 폰 모두에서 들려요. 소리가 안 나면 미디어 볼륨을 확인하세요.</p>
+  <p class="note">발음은 미리 녹음한 원어민식 음성(여자·남자)으로 재생돼 iPad와 안드로이드 폰 모두에서 들려요. 소리가 안 나면 미디어 볼륨을 확인하세요. 속도·목소리는 위의 '소리 설정'에서 바꿔요.</p>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -306,10 +342,15 @@ const sayBtn=(n,what,label)=>`<button class="say" data-say="${what}" data-n="${n
 
 /* ---------- saved state (this device only) ---------- */
 const KEY="power-english-101-150.v1";
-const S={known:[],wrong:{},rate:1,voice:"",engine:"f",auto:true,tab:"list",filter:"all",hide:false,cardMode:"en",qtype:"e2k",qcount:10};
+const S={known:[],wrong:{},rate:1,voice:"",engine:"f",auto:true,tab:"list",filter:"all",hide:false,cardMode:"en",qtype:"e2k",qcount:10,
+  showSet:false,sscope:"star",smode:"card",sdir:"k2e",sknown:[],swrong:{}};
 try{const raw=localStorage.getItem(KEY);if(raw)Object.assign(S,JSON.parse(raw));}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 let known=new Set(S.known);
+let sknown=new Set(S.sknown);
+function setSKnown(n,v){v?sknown.add(n):sknown.delete(n);S.sknown=[...sknown];save();}
+function addSWrong(n){S.swrong[n]=(S.swrong[n]||0)+1;save();}
+let fopen=false;
 function setKnown(n,v){v?known.add(n):known.delete(n);S.known=[...known];save();}
 function addWrong(n){S.wrong[n]=(S.wrong[n]||0)+1;save();}
 
@@ -349,7 +390,7 @@ function playFile(n,what,slow,text){
   const kind=what==="sent"?"s":slow?"ws":"w";
   player.pause();
   player.src=`audio/${S.engine}/${n}${kind}.mp3`;
-  player.playbackRate=kind==="ws"?1:(FILE_RATE[S.rate]||1);
+  player.playbackRate=kind==="ws"?1:(FILE_RATE[S.rate]||1)*(kind==="s"&&slow?.75:1);
   if("preservesPitch" in player)player.preservesPitch=true;
   player.onerror=()=>{player.onerror=null;if(synth)speak(text,slow);else toast("발음 파일을 불러오지 못했어요. 인터넷 연결을 확인하세요.");};
   const p=player.play();
@@ -377,10 +418,13 @@ function renderVoicebar(){
   }
   h+=`<button class="chk" data-act="auto" aria-pressed="${S.auto}"><span class="dot"></span>자동 발음</button>`;
   $("#voicebar").innerHTML=h;
+  $("#voicebar").hidden=!S.showSet;
+  const sb=$("#setbtn");sb.setAttribute("aria-expanded",S.showSet);sb.setAttribute("aria-pressed",S.showSet);
+  sb.lastChild.textContent=S.showSet?"설정 닫기":"소리 설정";
 }
-const TABS=[["list","단어장"],["card","카드"],["quiz","퀴즈"],["wrong","오답노트"]];
+const TABS=[["list","단어장"],["card","카드"],["sent","문장"],["quiz","퀴즈"],["wrong","오답"]];
 function renderTabs(){
-  const wc=Object.keys(S.wrong).length;
+  const wc=new Set([...Object.keys(S.wrong),...Object.keys(S.swrong)]).size;
   $("#tabs").innerHTML=TABS.map(([id,l])=>`<button role="tab" data-act="tab" data-v="${id}" aria-selected="${S.tab===id}">${l}${id==="wrong"&&wc?`<small>${wc}</small>`:""}</button>`).join("");
 }
 function inFilter(x,f){
@@ -391,15 +435,23 @@ function inFilter(x,f){
   return String(unitOf(x.n))===f;
 }
 const pool=()=>W.filter(x=>inFilter(x,S.filter));
+const F=[["all","전체"],["star","★ 시험 20"],["11","101–110"],["12","111–120"],["13","121–130"],["14","131–140"],["15","141–150"],["todo","아직 못 외운 것"],["wrong","오답"]];
 function renderFilters(){
-  if(S.tab==="wrong"){$("#filters").hidden=true;return;}
-  $("#filters").hidden=false;
-  const F=[["all","전체"],["star","★ 시험 20"],["11","101–110"],["12","111–120"],["13","121–130"],["14","131–140"],["15","141–150"],["todo","아직 못 외운 것"],["wrong","오답"]];
-  $("#filters").innerHTML=F.map(([id,l])=>{
-    const c=W.filter(x=>inFilter(x,id)).length;
-    return `<button class="chip${id==="star"?" starchip":""}" data-act="filter" data-v="${id}" aria-pressed="${S.filter===id}">${l}<b>${c}</b></button>`;
-  }).join("");
+  const el=$("#filters");
+  /* 문장 탭은 자체 범위 버튼을 쓰고, 퀴즈를 푸는 중에는 범위를 숨긴다 */
+  if(S.tab==="wrong"||S.tab==="sent"||(S.tab==="quiz"&&Q&&!Q.done)){el.hidden=true;return;}
+  el.hidden=false;
+  const count=id=>W.filter(x=>inFilter(x,id)).length;
+  /* 단어장은 전부 펼치고, 카드·퀴즈 설정 화면은 한 줄로 접어서 문제 칸이 위로 오게 한다 */
+  if(S.tab!=="list"&&!fopen){
+    const cur=F.find(f=>f[0]===S.filter)||F[0];
+    el.innerHTML=`<button class="chip rangebtn" data-act="fopen" aria-expanded="false">범위: ${cur[1]}<b>${count(cur[0])}</b> ▾</button>`;
+    return;
+  }
+  el.innerHTML=F.map(([id,l])=>`<button class="chip${id==="star"?" starchip":""}" data-act="filter" data-v="${id}" aria-pressed="${S.filter===id}">${l}<b>${count(id)}</b></button>`).join("")
+    +(S.tab!=="list"?`<button class="chip" data-act="fopen" aria-expanded="true">접기 ▴</button>`:"");
 }
+function curFilterName(){const cur=F.find(f=>f[0]===S.filter)||F[0];return cur[1];}
 
 /* ---------- 단어장 ---------- */
 function viewList(){
@@ -461,11 +513,11 @@ function viewCard(){
     ${front}
     <div class="c-back${revealed?" open":""}" data-act="reveal">${back}</div>
   </article>
-  <div class="c-nav">
-    <button class="btn navbtn" data-act="prev" aria-label="이전 카드">◀ 이전</button>
+  <div class="dock">
+    <button class="btn icon" data-act="prev" aria-label="이전 카드">◀</button>
     <button class="btn bad" data-act="mark" data-v="0">몰라요</button>
     <button class="btn good" data-act="mark" data-v="1">알아요</button>
-    <button class="btn navbtn" data-act="next" aria-label="다음 카드">다음 ▶</button>
+    <button class="btn icon" data-act="next" aria-label="다음 카드">▶</button>
   </div>
   <div class="c-tools">
     <div class="seg" role="group" aria-label="카드 앞면"><button data-act="cmode" data-v="en" aria-pressed="${!ko}">영어 먼저</button><button data-act="cmode" data-v="ko" aria-pressed="${ko}">뜻 먼저</button></div>
@@ -477,7 +529,7 @@ function cardSpeakFront(){
   if(!S.auto||S.tab!=="card"||!cardOrder.length)return;
   if(S.cardMode==="en")sayEntry(cardOrder[ci],"word");
 }
-function moveCard(d){if(!cardOrder.length)return;ci=(ci+d+cardOrder.length)%cardOrder.length;revealed=false;render();cardSpeakFront();}
+function moveCard(d){if(!cardOrder.length)return;ci=(ci+d+cardOrder.length)%cardOrder.length;revealed=false;render();toView();cardSpeakFront();}
 
 /* ---------- 퀴즈 ---------- */
 const QT=[
@@ -491,7 +543,7 @@ let Q=null;
 function startQuiz(items){
   if(!items.length){toast("이 범위에는 문제를 낼 단어가 없어요.");return;}
   Q={type:S.qtype,items,i:0,score:0,wrongs:[],done:false};
-  prepQ();render();afterQRender();
+  prepQ();render();toView();afterQRender();
 }
 function prepQ(){
   const x=Q.items[Q.i];
@@ -525,7 +577,7 @@ function viewQuiz(){
     }).join("")+`</div>`;
   }else{
     const cls=Q.ans?(Q.ans.ok?"right":"wrong"):"";
-    answer=`<form class="typeform" id="typeform" autocomplete="off"><input id="typed" class="${cls}" type="text" inputmode="latin" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="영어로 쓰기" value="${esc(Q.typed)}"${Q.ans?" readonly":""} aria-label="답 입력"><button class="btn primary" type="submit">${Q.ans?"다음":"확인"}</button></form>`;
+    answer=`<form class="typeform" id="typeform" autocomplete="off"><input id="typed" class="${cls}" type="text" inputmode="latin" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="영어로 쓰기" value="${esc(Q.typed)}"${Q.ans?" readonly":""} aria-label="답 입력">${Q.ans?"":`<button class="btn primary" type="submit">확인</button>`}</form>`;
   }
   let fb="";
   if(Q.ans){
@@ -545,19 +597,18 @@ function viewQuiz(){
     <p class="qkind">${t.name}${x.st?' · <span class="badge">★ 시험</span>':""}</p>
     <div class="qprompt">${prompt}</div>
     ${answer}${fb}
-    ${acts?`<div class="qactions">${acts}</div>`:""}
   </section>
+  ${acts?`<div class="dock">${acts}</div>`:""}
   ${["e2k","k2e","listen"].includes(Q.type)&&!Q.ans?'<p class="note">키보드에서는 1~4 숫자로 고를 수 있어요.</p>':""}`;
 }
 function viewQuizSetup(){
   const p=pool();
   const counts=[[10,"10문제"],[20,"20문제"],[0,"전부"]];
-  const fname=$("#filters").querySelector('[aria-pressed="true"]');
   return `<section class="panel qsetup">
     <h2>퀴즈</h2>
     <div><p class="label">문제 유형</p><div class="qtypes">${QT.map(q=>`<button class="qtype" data-act="qtype" data-v="${q.id}" aria-pressed="${S.qtype===q.id}"><b>${q.name}</b><span>${q.desc}</span></button>`).join("")}</div></div>
     <div><p class="label">문제 수</p><div class="seg" role="group" aria-label="문제 수">${counts.map(([c,l])=>`<button data-act="qcount" data-v="${c}" aria-pressed="${S.qcount===c}">${l}</button>`).join("")}</div></div>
-    <p class="ko">범위: <b>${fname?esc(fname.firstChild.textContent):"전체"}</b> (${p.length}단어) · 범위는 위쪽 버튼으로 바꿀 수 있어요.</p>
+    <p class="ko">범위: <b>${esc(curFilterName())}</b> (${p.length}단어) · 범위는 위쪽 '범위' 버튼으로 바꿀 수 있어요.</p>
     <div><button class="btn primary" data-act="qstart" style="min-width:180px">시작하기</button></div>
   </section>`;
 }
@@ -587,8 +638,138 @@ function afterQRender(){
   const inp=$("#typed");if(inp&&!Q.ans)inp.focus({preventScroll:true});
 }
 function qNext(){
-  if(Q.i+1>=Q.items.length){Q.done=true;render();return;}
-  Q.i++;prepQ();render();afterQRender();
+  if(Q.i+1>=Q.items.length){Q.done=true;render();toView();return;}
+  Q.i++;prepQ();render();toView();afterQRender();
+}
+
+/* ---------- 문장 (예문 통째로 외우기) ---------- */
+/* 범위: 시험 문장 20(선생님 프린트 '문장 포함' ★) 이 기본. 단어 탭 범위와 따로 움직인다 */
+const SSCOPE=[["star","★ 시험 문장"],["all","전체"],["todo","못 외운 것"],["wrong","틀린 것"]];
+function inSScope(x,f){
+  if(f==="star")return !!x.st;
+  if(f==="todo")return x.st?!sknown.has(x.n):false;   /* 시험 문장 중 아직 못 외운 것 */
+  if(f==="wrong")return !!S.swrong[x.n];
+  return true;
+}
+const spool=()=>W.filter(x=>inSScope(x,S.sscope));
+const SMODES=[["card","문장 카드"],["order","단어 배열"],["write","영작"]];
+let sOrder=[],si=0,sRev=false,sToks=null,sPicked=[],sTyped="",sRes=null,sHint=false,sScore=0,sTried=0;
+function sReset(){sRev=false;sToks=null;sPicked=[];sTyped="";sRes=null;sHint=false;}
+function sSync(){
+  const ids=spool().map(x=>x.n);
+  const same=ids.length===sOrder.length&&ids.every(n=>sOrder.includes(n));
+  if(!same){sOrder=ids;si=0;sReset();}
+  if(si>=sOrder.length)si=0;
+}
+const sWords=x=>plain(x.s).split(" ");
+const normS=s=>String(s).toLowerCase().replace(/[’‘`]/g,"'").replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," ").trim();
+function wdiff(user,right){
+  /* 단어 단위 LCS: 내 답에만 있는 말은 <del>, 빠진 말은 <ins> */
+  const a=normS(user).split(" ").filter(Boolean),bw=right.split(" "),b=bw.map(normS);
+  const m=a.length,n=b.length,L=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)L[i][j]=a[i]===b[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  const out=[];let i=0,j=0;
+  while(i<m&&j<n){
+    if(a[i]===b[j]){out.push(esc(bw[j]));i++;j++;}
+    else if(L[i+1][j]>=L[i][j+1]){out.push(`<del>${esc(a[i])}</del>`);i++;}
+    else{out.push(`<ins>${esc(bw[j])}</ins>`);j++;}
+  }
+  while(i<m)out.push(`<del>${esc(a[i++])}</del>`);
+  while(j<n)out.push(`<ins>${esc(bw[j++])}</ins>`);
+  return out.join(" ");
+}
+function sFeedback(x,ok,extra){
+  return `<div class="fb ${ok?"ok":"no"}"><p class="verdict">${ok?"정답이에요!":"정답 문장을 확인하세요."}</p>
+    ${extra||""}
+    <div class="c-sent"><p class="s-en">${marked(x.s)}</p>${sayBtn(x.n,"sent","문장 듣기")}</div>
+    <p class="ko">${esc(x.k)}</p>${x.t?`<p class="tip">${esc(x.t)}</p>`:""}</div>`;
+}
+function viewSent(){
+  sSync();
+  const scope=`<div class="filters" role="group" aria-label="문장 범위">`+SSCOPE.map(([id,l])=>{
+      const c=W.filter(x=>inSScope(x,id)).length;
+      return `<button class="chip${id==="star"?" starchip":""}" data-act="sscope" data-v="${id}" aria-pressed="${S.sscope===id}">${l}<b>${c}</b></button>`;
+    }).join("")+`</div>`;
+  const modes=`<div class="seg" role="group" aria-label="공부 방법">`+SMODES.map(([id,l])=>`<button data-act="smode" data-v="${id}" aria-pressed="${S.smode===id}">${l}</button>`).join("")+`</div>`;
+  if(!sOrder.length){
+    const msg=S.sscope==="todo"?"시험 문장 20개를 모두 외웠어요. '영작'으로 통째로 써 보세요.":S.sscope==="wrong"?"아직 틀린 문장이 없어요. '단어 배열'이나 '영작'에서 틀리면 여기에 모여요.":"이 범위에 문장이 없어요.";
+    return scope+modes+`<div class="panel empty">${msg}</div>`;
+  }
+  const x=BY[sOrder[si]],len=sOrder.length;
+  const kn=sOrder.filter(n=>sknown.has(n)).length;
+  const meta=S.smode==="card"
+    ?`<div class="cardmeta"><span class="num">${si+1} / ${len}</span><div class="bar"><i style="width:${Math.round(kn/len*100)}%"></i></div><span>외운 문장 <span class="num">${kn}/${len}</span></span></div>`
+    :`<div class="cardmeta"><span class="num">${si+1} / ${len}</span><div class="bar"><i style="width:${Math.round((si+(sRes?1:0))/len*100)}%"></i></div><span>맞힘 <span class="num">${sScore}/${sTried}</span></span></div>`;
+  const top=`<div class="c-top"><span class="c-no">No. ${x.n}</span>${x.st?'<span class="badge">★ 시험</span>':""}${sknown.has(x.n)?'<span style="color:var(--good)">✓ 외움</span>':""}</div>`;
+  const key=`<p class="s-key">핵심 단어 <b>${esc(x.w)}</b> · ${esc(x.m)}</p>`;
+  let body="",dock="";
+  if(S.smode==="card"){
+    const k2e=S.sdir==="k2e";
+    const front=k2e?`<p class="s-ko">${esc(x.k)}</p>${key}`
+      :`<div class="c-sent"><p class="s-en">${esc(plain(x.s))}</p>${sayBtn(x.n,"sent","문장 듣기")}</div>`;
+    const back=!sRev?`<p class="c-hint">탭해서 ${k2e?"영어 문장":"우리말 뜻"} 보기</p>`
+      :(k2e?`<div class="c-sent"><p class="s-en">${marked(x.s)}</p>${sayBtn(x.n,"sent","문장 듣기")}</div>
+          <div class="c-say"><button class="btn" data-say="sent" data-slow="1" data-n="${x.n}">${ICON_SPK}천천히</button></div>`
+          :`<p class="s-ko">${esc(x.k)}</p>${key}`)
+        +(x.t?`<p class="tip">${esc(x.t)}</p>`:"");
+    body=`<article class="panel card${x.st?" isstar":""}" id="card">${top}${front}<div class="c-back${sRev?" open":""}" data-act="sreveal">${back}</div></article>
+      <div class="c-tools"><div class="seg" role="group" aria-label="카드 방향"><button data-act="sdir" data-v="k2e" aria-pressed="${k2e}">우리말 → 영어</button><button data-act="sdir" data-v="e2k" aria-pressed="${!k2e}">영어 → 우리말</button></div>
+      <button class="btn" data-act="sshuf">섞기</button><button class="btn" data-act="snum">번호순</button></div>`;
+    dock=`<button class="btn icon" data-act="sprev" aria-label="이전 문장">◀</button><button class="btn bad" data-act="smark" data-v="0">몰라요</button><button class="btn good" data-act="smark" data-v="1">외웠어요</button><button class="btn icon" data-act="snext" aria-label="다음 문장">▶</button>`;
+  }else if(S.smode==="order"){
+    const words=sWords(x);
+    if(!sToks){
+      let t=words.map((w,i)=>({w,i}));
+      for(let k=0;k<5;k++){t=shuffle(t);if(words.length<2||t.some((o,i)=>o.i!==i))break;}
+      sToks=t;
+    }
+    const lineCls=sRes?(sRes.ok?" right":" wrong"):"";
+    const line=sPicked.map((k,pos)=>`<button class="tok" data-act="sunpick" data-p="${pos}"${sRes?" disabled":""}>${esc(sToks[k].w)}</button>`).join("");
+    const poolH=sToks.map((o,k)=>`<button class="tok${sPicked.includes(k)?" used":""}" data-act="spick" data-k="${k}"${sRes||sPicked.includes(k)?" disabled":""}>${esc(o.w)}</button>`).join("");
+    body=`<section class="panel qbox">${top}<p class="qkind">단어를 눌러 순서대로 · 놓은 단어를 누르면 빠져요</p><p class="s-ko">${esc(x.k)}</p>
+      <div class="tokline${lineCls}" aria-label="내가 만든 문장">${line||'<span class="c-hint" style="margin:auto">여기에 문장이 만들어져요</span>'}</div>
+      ${sRes?sFeedback(x,sRes.ok):`<div class="tokpool">${poolH}</div>`}</section>`;
+    dock=sRes?`<button class="btn primary" data-act="snext">${si+1<len?"다음 문장 ▶":"처음부터 다시"}</button>`
+      :`<button class="btn" data-act="sclear">처음부터</button><button class="btn" data-act="sgive">정답 보기</button>`;
+  }else{
+    const cls=sRes?(sRes.ok?" right":" wrong"):"";
+    const hint=sHint?`<p class="s-key">힌트: <b>${esc(sWords(x).slice(0,3).join(" "))} …</b> (${sWords(x).length}단어)</p>`:"";
+    body=`<section class="panel qbox">${top}<p class="qkind">우리말을 보고 영어 문장 전체를 쓰세요 · 핵심 단어를 꼭 넣기</p><p class="s-ko">${esc(x.k)}</p>
+      <p class="s-key">( <b>${esc(x.w)}</b> )</p>${hint}
+      <form id="swform" autocomplete="off"><textarea id="swrite" class="swrite${cls}" rows="3" autocapitalize="sentences" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="영어 문장을 쓰세요" aria-label="영작 답"${sRes?" readonly":""}>${esc(sTyped)}</textarea></form>
+      ${sRes?sFeedback(x,sRes.ok,sRes.ok?"":`<p class="yours">고칠 곳 — 빨간 줄은 빼고, 초록 밑줄은 넣어야 해요</p><p class="diff">${sRes.typed.trim()?wdiff(sRes.typed,plain(x.s)):"(빈칸)"}</p>`):""}</section>`;
+    dock=sRes?`<button class="btn primary" data-act="snext">${si+1<len?"다음 문장 ▶":"처음부터 다시"}</button>`
+      :`${sHint?"":`<button class="btn" data-act="shint">힌트</button>`}<button class="btn" data-act="sgive">모르겠어요</button><button class="btn primary" data-act="scheck">확인</button>`;
+  }
+  return scope+modes+meta+body+`<div class="dock">${dock}</div>`
+    +(S.sscope==="star"?`<p class="note">★ 시험 문장 = 선생님 프린트 'Power English 101-150 (2학기 1차고사)'의 "문장 포함" 20단어. 시험에서는 빈칸·영작으로 나와요.</p>`:"");
+}
+function sCheckOrder(){
+  const x=BY[sOrder[si]];
+  if(sPicked.length<sWords(x).length)return;
+  const built=sPicked.map(k=>sToks[k].w).join(" ");
+  sRes={ok:built===plain(x.s)};sTried++;
+  if(sRes.ok)sScore++;else addSWrong(x.n);
+  render();if(S.auto)sayEntry(x.n,"sent");
+}
+function sCheckWrite(){
+  const x=BY[sOrder[si]],el=$("#swrite");
+  sTyped=el?el.value:sTyped;
+  if(!sTyped.trim()){toast("문장을 쓰거나 '모르겠어요'를 누르세요.");return;}
+  sRes={ok:normS(sTyped)===normS(plain(x.s)),typed:sTyped};sTried++;
+  if(sRes.ok)sScore++;else addSWrong(x.n);
+  render();if(S.auto)sayEntry(x.n,"sent");
+}
+function sMove(d){
+  if(!sOrder.length)return;
+  si=(si+d+sOrder.length)%sOrder.length;sReset();render();toView();
+  if(S.auto&&S.smode==="card"&&S.sdir==="e2k")sayEntry(sOrder[si],"sent");
+}
+/* 다음 문제·카드로 넘어갈 때 문제 칸이 화면 위에 오게 한다 (위로 많이 내려가 있을 때만) */
+function toView(){
+  const v=$("#view"),tabs=$("#tabs");
+  const y=v.getBoundingClientRect().top+window.scrollY-tabs.getBoundingClientRect().height-12;
+  if(window.scrollY>y+2)window.scrollTo({top:Math.max(0,y)});
 }
 
 /* ---------- 오답노트 ---------- */
@@ -602,12 +783,20 @@ function viewWrong(){
     <div class="btnrow"><button class="btn primary" data-act="wcard">오답만 카드로 외우기</button><button class="btn" data-act="wquiz">오답만 퀴즈</button></div>
     <div class="mini">${ids.map(n=>{const x=BY[n];return `<div class="mini-row"><span class="w">${esc(x.w)} ${sayBtn(n,"word","발음 듣기")}</span><span class="m">${esc(x.m)} <span class="cnt">×${S.wrong[n]}</span></span><button class="xbtn" data-act="wdel" data-n="${n}">지우기</button></div>`;}).join("")}</div>`;
   }
+  h+=`</section>`;
+  const sids=Object.keys(S.swrong).map(Number).sort((a,b)=>S.swrong[b]-S.swrong[a]||a-b);
+  h+=`<section class="panel wrongs"><h2>틀린 문장</h2>`;
+  if(!sids.length)h+=`<p>문장 탭의 '단어 배열'·'영작'에서 틀린 문장이 여기에 모여요.</p>`;
+  else h+=`<p>틀린 문장 ${sids.length}개. 다 외운 문장은 '지우기'로 빼세요.</p>
+    <div class="btnrow"><button class="btn primary" data-act="wsent">틀린 문장만 연습</button></div>
+    <div class="mini">${sids.map(n=>{const x=BY[n];return `<div class="mini-row"><span class="w" style="font-size:1rem">${sayBtn(n,"sent","문장 듣기")}</span><span class="m"><span style="color:var(--ink)">${marked(x.s)}</span><br>${esc(x.k)} <span class="cnt">×${S.swrong[n]}</span></span><button class="xbtn" data-act="swdel" data-n="${n}">지우기</button></div>`;}).join("")}</div>`;
   h+=`</section>
   <section class="panel wrongs"><h2>학습 기록</h2>
-    <p>외움 표시 ${known.size} / 50단어 · 기록은 이 기기의 이 브라우저에만 저장돼요.</p>
+    <p>외운 단어 ${known.size} / 50 · 외운 시험 문장 ${W.filter(x=>x.st&&sknown.has(x.n)).length} / 20 · 기록은 이 기기의 이 브라우저에만 저장돼요.</p>
     <div class="btnrow">
       <button class="btn${confirmReset==="wrong"?" bad":""}" data-act="reset" data-v="wrong">${confirmReset==="wrong"?"한 번 더 누르면 오답 기록 삭제":"오답 기록 모두 지우기"}</button>
       <button class="btn${confirmReset==="known"?" bad":""}" data-act="reset" data-v="known">${confirmReset==="known"?"한 번 더 누르면 외움 표시 삭제":"외움 표시 모두 지우기"}</button>
+      <button class="btn${confirmReset==="sent"?" bad":""}" data-act="reset" data-v="sent">${confirmReset==="sent"?"한 번 더 누르면 문장 기록 삭제":"문장 기록 모두 지우기"}</button>
     </div>
   </section>`;
   return h;
@@ -618,7 +807,7 @@ function render(){
   renderTabs();renderFilters();
   const v=$("#view");
   v.style.display="flex";v.style.flexDirection="column";v.style.gap="14px";
-  v.innerHTML=S.tab==="list"?viewList():S.tab==="card"?viewCard():S.tab==="quiz"?viewQuiz():viewWrong();
+  v.innerHTML=S.tab==="list"?viewList():S.tab==="card"?viewCard():S.tab==="sent"?viewSent():S.tab==="quiz"?viewQuiz():viewWrong();
 }
 
 /* ---------- events ---------- */
@@ -629,8 +818,40 @@ document.addEventListener("click",e=>{
   if(!b)return;
   const a=b.dataset.act,v=b.dataset.v;
   switch(a){
-    case "tab":S.tab=v;confirmReset=null;save();render();window.scrollTo({top:0});if(v==="card")cardSpeakFront();break;
-    case "filter":S.filter=v;save();if(Q&&!Q.done&&S.tab==="quiz"){/* keep running quiz */}render();break;
+    case "tab":S.tab=v;confirmReset=null;fopen=false;save();render();window.scrollTo({top:0});if(v==="card")cardSpeakFront();break;
+    case "filter":S.filter=v;fopen=false;save();render();break;
+    case "fopen":fopen=!fopen;renderFilters();break;
+    case "set":S.showSet=!S.showSet;save();renderVoicebar();break;
+    /* 문장 탭 */
+    case "sscope":S.sscope=v;sOrder=[];sScore=0;sTried=0;save();render();break;
+    case "smode":S.smode=v;sReset();sScore=0;sTried=0;save();render();break;
+    case "sdir":S.sdir=v;sRev=false;save();render();if(S.auto&&v==="e2k")sayEntry(sOrder[si],"sent");break;
+    case "sreveal":if(!sRev){sRev=true;render();if(S.auto&&S.sdir==="k2e")sayEntry(sOrder[si],"sent");}break;
+    case "sprev":sMove(-1);break;
+    case "snext":sMove(1);break;
+    case "smark":{
+      const n=sOrder[si];setSKnown(n,v==="1");
+      if(S.sscope==="todo"&&v==="1"){sSync();sReset();render();toView();}
+      else sMove(1);
+      break;}
+    case "sshuf":sOrder=shuffle(sOrder);si=0;sReset();render();toast("문장을 섞었어요.");break;
+    case "snum":sOrder=sOrder.slice().sort((a,b)=>a-b);si=0;sReset();render();break;
+    case "spick":{
+      const k=+b.dataset.k;if(sRes||sPicked.includes(k))break;
+      sPicked.push(k);
+      if(sPicked.length===sWords(BY[sOrder[si]]).length)sCheckOrder();else render();
+      break;}
+    case "sunpick":if(!sRes){sPicked.splice(+b.dataset.p,1);render();}break;
+    case "sclear":sPicked=[];render();break;
+    case "shint":{const el=$("#swrite");if(el)sTyped=el.value;sHint=true;render();const t=$("#swrite");if(t)t.focus({preventScroll:true});break;}
+    case "scheck":sCheckWrite();break;
+    case "sgive":{
+      const x=BY[sOrder[si]],el=$("#swrite");
+      if(el)sTyped=el.value;
+      sRes={ok:false,typed:sTyped};sTried++;addSWrong(x.n);render();if(S.auto)sayEntry(x.n,"sent");
+      break;}
+    case "wsent":S.tab="sent";S.sscope="wrong";if(S.smode==="card")S.smode="order";sOrder=[];sScore=0;sTried=0;save();render();window.scrollTo({top:0});break;
+    case "swdel":delete S.swrong[+b.dataset.n];save();render();break;
     case "rate":S.rate=+v;save();renderVoicebar();sayEntry(101,"word");break;
     case "engine":S.engine=v;save();renderVoicebar();sayEntry(101,"word");break;
     case "auto":S.auto=!S.auto;save();renderVoicebar();break;
@@ -663,8 +884,10 @@ document.addEventListener("click",e=>{
     case "wdel":delete S.wrong[+b.dataset.n];save();render();break;
     case "reset":
       if(confirmReset!==v){confirmReset=v;render();break;}
-      if(v==="wrong")S.wrong={};else{known=new Set();S.known=[];}
-      confirmReset=null;save();render();toast(v==="wrong"?"오답 기록을 지웠어요.":"외움 표시를 지웠어요.");break;
+      if(v==="wrong")S.wrong={};
+      else if(v==="sent"){S.swrong={};sknown=new Set();S.sknown=[];}
+      else{known=new Set();S.known=[];}
+      confirmReset=null;save();render();toast(v==="wrong"?"오답 기록을 지웠어요.":v==="sent"?"문장 기록을 지웠어요.":"외움 표시를 지웠어요.");break;
   }
 });
 document.addEventListener("submit",e=>{
@@ -681,7 +904,18 @@ document.addEventListener("change",e=>{
   if(e.target.id==="voiceSelect"){S.voice=e.target.value;save();speak("Hello. This is Power English.");}
 });
 document.addEventListener("keydown",e=>{
-  if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT"||e.metaKey||e.ctrlKey)return;
+  /* 영작 칸: Enter = 확인 / 다음 (줄바꿈 대신) */
+  if(e.target.id==="swrite"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){
+    e.preventDefault();if(sRes)sMove(1);else sCheckWrite();return;
+  }
+  if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT"||e.target.tagName==="TEXTAREA"||e.metaKey||e.ctrlKey)return;
+  if(S.tab==="sent"){
+    if(e.key==="ArrowRight"){sMove(1);e.preventDefault();}
+    else if(e.key==="ArrowLeft"){sMove(-1);e.preventDefault();}
+    else if(e.key===" "&&S.smode==="card"&&!sRev){sRev=true;render();e.preventDefault();}
+    else if(e.key==="Enter"&&sRes){sMove(1);e.preventDefault();}
+    return;
+  }
   if(S.tab==="card"){
     if(e.key==="ArrowRight"){moveCard(1);e.preventDefault();}
     else if(e.key==="ArrowLeft"){moveCard(-1);e.preventDefault();}
@@ -693,11 +927,11 @@ document.addEventListener("keydown",e=>{
   }
 });
 let tx=null,ty=null;
-document.addEventListener("touchstart",e=>{if(S.tab!=="card"||!e.target.closest("#card"))return;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener("touchstart",e=>{if((S.tab!=="card"&&S.tab!=="sent")||!e.target.closest("#card"))return;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
 document.addEventListener("touchend",e=>{
   if(tx===null)return;
   const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;tx=null;
-  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5)moveCard(dx<0?1:-1);
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(S.tab==="sent")sMove(dx<0?1:-1);else moveCard(dx<0?1:-1);}
 },{passive:true});
 
 if(!TABS.some(t=>t[0]===S.tab))S.tab="list";
