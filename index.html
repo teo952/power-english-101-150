@@ -54,7 +54,6 @@ mark{background:linear-gradient(transparent 55%,var(--hl-soft) 55%);color:inheri
 
 /* header */
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px}
-.eyebrow{margin:0 0 2px;font-size:.78rem;letter-spacing:.06em;color:var(--muted)}
 h1{margin:0;font-family:var(--f-display);font-weight:600;font-size:clamp(1.9rem,5vw,2.6rem);line-height:1.05;letter-spacing:-.01em;text-wrap:balance}
 h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing:0;color:var(--accent);vertical-align:.35em;margin-left:.2em}
 .voicebar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
@@ -232,6 +231,8 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
 .diff ins{color:var(--good);text-decoration:none;font-weight:700;border-bottom:2px solid var(--good)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-size:.92rem;max-width:min(92vw,520px);z-index:20;box-shadow:var(--shadow)}
 .note{font-size:.8rem;color:var(--muted);margin:0;text-align:center}
+.note a{color:inherit;text-underline-offset:2px;overflow-wrap:anywhere}
+.note .nw{white-space:nowrap}
 @media (max-width:560px){
   .opts{grid-template-columns:1fr}
   .row{grid-template-columns:36px minmax(0,1fr);padding:14px}
@@ -242,7 +243,6 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
   .tabs button{padding:8px 2px;font-size:.92rem}
   body{padding-block:12px 40px}
   .app{gap:12px}
-  .eyebrow{display:none}
   h1{font-size:1.65rem}
   .card,.qbox{padding:18px 16px 16px}
   .c-back{min-height:120px}
@@ -255,7 +255,6 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
 <div class="app">
   <header class="top">
     <div class="brand">
-      <p class="eyebrow">화명중 2학년 필수 어휘 · 2학기 1차고사 범위 · 업데이트 2026-10-25</p>
       <h1>Power English<span>101–150</span></h1>
     </div>
     <button class="chk" id="setbtn" data-act="set" aria-expanded="false" aria-controls="voicebar"><span class="dot"></span>소리 설정</button>
@@ -264,7 +263,7 @@ h1 span{font-family:var(--f-mono);font-weight:500;font-size:.55em;letter-spacing
   <nav class="tabs" role="tablist" id="tabs"></nav>
   <div class="filters" id="filters" aria-label="공부할 범위"></div>
   <main id="view"></main>
-  <p class="note">발음은 미리 녹음한 원어민식 음성(여자·남자)으로 재생돼 iPad와 안드로이드 폰 모두에서 들려요. 소리가 안 나면 미디어 볼륨을 확인하세요. 속도·목소리는 위의 '소리 설정'에서 바꿔요.</p>
+  <p class="note"><span class="nw">화명중 2학년 필수 어휘</span> · <span class="nw">2학기 1차고사 범위</span> · <span class="nw">업데이트 2026-10-25</span><br><a href="https://github.com/teo952" target="_blank" rel="noopener">https://github.com/teo952</a></p>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
